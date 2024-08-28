@@ -9,7 +9,7 @@ module factorial (
     input reset,
     input start,
     input [7:0] fdata_in,
-    output reg done,
+    output done,
     output reg [15:0] fdata_out
 );
 
@@ -17,28 +17,35 @@ module factorial (
     reg [15:0] nx_result, result;
     reg [7:0] nx_mult, mult;
 
+	assign done = (state == RESULT) ? 1:0;
     always_comb begin
         case (state)
             START: begin
-                done = 0;
                 if (start) begin
                     nx_result = fdata_in;
                     nx_mult = fdata_in - 1;
                     nx_state = CAL;
-                end
+                end else begin
+                    nx_result = result;
+                    nx_mult = mult;
+                    nx_state = state;
+				end
             end
             CAL: begin
                 if (mult == 1) begin
+                    nx_result = result;
+                    nx_mult = mult;
                     nx_state = RESULT;
-                    done = 1;
                 end else begin
                     nx_result = result * mult;
                     nx_mult = mult - 1;
+                    nx_state = state;
                 end
             end
-            RESULT: begin
+            default: begin
+                nx_result = result;
+                nx_mult = mult;
                 nx_state = START;
-                done = 0;
             end
         endcase
     end
